@@ -1,0 +1,16 @@
+name: Reusable maven CI build workflow for the Belgif openapi projects
+on:
+  workflow_call:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Adopt OpenJDK 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt
+        java-version: '21'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B package

@@ -1,0 +1,44 @@
+name: Reusable release workflow for the Belgif openapi projects
+on:
+  workflow_call:
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Adopt OpenJDK 21
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt
+        java-version: '21'
+        cache: maven
+        server-id: ossrh
+        server-username: OPENAPI_OSSRH_USERNAME
+        server-password: OPENAPI_OSSRH_TOKEN
+        gpg-private-key: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
+        gpg-passphrase: OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD
+    - name: Set release version in pom.xml
+      run: |
+         VERSION=${GITHUB_REF_NAME:1}
+         mvn -B versions:set -DnewVersion=$VERSION
+    - name: Build with Maven
+      run: |
+        mvn -B package
+        SWAGGER_ARTIFACT_FILE=`ls ./target/*-swagger.zip`
+        echo "SWAGGER_ARTIFACT_FILE=$SWAGGER_ARTIFACT_FILE" >> $GITHUB_ENV
+        echo "SWAGGER_ARTIFACT_NAME=`basename $SWAGGER_ARTIFACT_FILE`" >> $GITHUB_ENV
+        OPENAPI_ARTIFACT_FILE=`ls ./target/*-openapi.zip`
+        echo "OPENAPI_ARTIFACT_FILE=$OPENAPI_ARTIFACT_FILE" >> $GITHUB_ENV
+        echo "OPENAPI_ARTIFACT_NAME=`basename $OPENAPI_ARTIFACT_FILE`" >> $GITHUB_ENV
+    - name: Create GitHub release
+      run: |
+        gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
+        - [placeholder]" "${SWAGGER_ARTIFACT_FILE}#${SWAGGER_ARTIFACT_NAME}" "${OPENAPI_ARTIFACT_FILE}#${OPENAPI_ARTIFACT_NAME}"
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish to Maven Central
+      env:
+        OPENAPI_OSSRH_USERNAME: ${{ secrets.OPENAPI_OSSRH_USERNAME }}
+        OPENAPI_OSSRH_TOKEN: ${{ secrets.OPENAPI_OSSRH_TOKEN }}
+        OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY_PASSWORD }}
+      run: mvn -B deploy
