@@ -20,10 +20,10 @@ jobs:
     - name: Set release version in pom.xml
       run: |
          VERSION=${GITHUB_REF_NAME:1}
-         mvn -B versions:set -DnewVersion=$VERSION
+         mvn ${{ runner.debug && '-X -e' || '' }} -B versions:set -DnewVersion=$VERSION
     - name: Build with Maven
       run: |
-        mvn -B package
+        mvn ${{ runner.debug && '-X -e' || '' }} -B package
         SWAGGER_ARTIFACT_FILE=`ls ./target/*-swagger.zip`
         echo "SWAGGER_ARTIFACT_FILE=$SWAGGER_ARTIFACT_FILE" >> $GITHUB_ENV
         echo "SWAGGER_ARTIFACT_NAME=`basename $SWAGGER_ARTIFACT_FILE`" >> $GITHUB_ENV
