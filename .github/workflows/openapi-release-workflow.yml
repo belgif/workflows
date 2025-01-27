@@ -24,16 +24,13 @@ jobs:
     - name: Build with Maven
       run: |
         mvn ${{ runner.debug && '-X -e' || '' }} -B package
-        SWAGGER_ARTIFACT_FILE=`ls ./target/*-swagger.zip`
-        echo "SWAGGER_ARTIFACT_FILE=$SWAGGER_ARTIFACT_FILE" >> $GITHUB_ENV
-        echo "SWAGGER_ARTIFACT_NAME=`basename $SWAGGER_ARTIFACT_FILE`" >> $GITHUB_ENV
         OPENAPI_ARTIFACT_FILE=`ls ./target/*-openapi.zip`
         echo "OPENAPI_ARTIFACT_FILE=$OPENAPI_ARTIFACT_FILE" >> $GITHUB_ENV
         echo "OPENAPI_ARTIFACT_NAME=`basename $OPENAPI_ARTIFACT_FILE`" >> $GITHUB_ENV
     - name: Create GitHub release
       run: |
         gh release create ${GITHUB_REF} --draft --title "Release ${GITHUB_REF_NAME}" --notes "Changes:
-        - [placeholder]" "${SWAGGER_ARTIFACT_FILE}#${SWAGGER_ARTIFACT_NAME}" "${OPENAPI_ARTIFACT_FILE}#${OPENAPI_ARTIFACT_NAME}"
+        - [placeholder]" "${OPENAPI_ARTIFACT_FILE}#${OPENAPI_ARTIFACT_NAME}"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish to Maven Central
