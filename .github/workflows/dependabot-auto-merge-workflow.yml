@@ -22,7 +22,9 @@ jobs:
         id: get-commit-message
         run: |
           echo "COMMIT_TITLE=$(git show -s --format=%s)" >> "$GITHUB_OUTPUT"
-          echo "COMMIT_BODY=$(git show -s --format=%b)" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_BODY<<BELGIF_EOF" >> "$GITHUB_OUTPUT"
+          echo "$(git show -s --format=%b)" >> "$GITHUB_OUTPUT"
+          echo "BELGIF_EOF" >> "$GITHUB_OUTPUT"
       - name: Enable auto-merge for Dependabot PRs
         run: gh pr merge --auto --squash "$PR_URL" --subject "$COMMIT_TITLE" --body "$COMMIT_BODY"
         env:
