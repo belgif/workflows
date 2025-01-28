@@ -9,16 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
-      - name: Logging
-        run: |
-          echo "${{toJSON(github.event)}}"
       - name: Automatically approve Dependabot PRs
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Checkout commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Get commit message
+        run: |
+          echo "COMMIT_TITLE=$(git show -s --format=%s)" >> "$GITHUB_ENV"
+          echo "COMMIT_BODY=$(git show -s --format=%b)" >> "$GITHUB_ENV"
       - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --auto --squash "$PR_URL"
+        run: gh pr merge --auto --squash "$PR_URL" --subject "$COMMIT_TITLE" --body "$COMMIT_BODY"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
