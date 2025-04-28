@@ -12,7 +12,7 @@ jobs:
         distribution: adopt
         java-version: '21'
         cache: maven
-        server-id: ossrh
+        server-id: central
         server-username: OPENAPI_OSSRH_USERNAME
         server-password: OPENAPI_OSSRH_TOKEN
         gpg-private-key: ${{ secrets.OPENAPI_OSSRH_GPG_SECRET_KEY }}
